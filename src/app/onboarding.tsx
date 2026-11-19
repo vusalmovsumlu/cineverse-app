@@ -4,28 +4,20 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useApp } from "../context/AppContext";
 
-const SLIDES = [
-  {
-    icon: "film" as const,
-    title: "Filmləri Kəşf Et",
-    desc: "Ən son trend, populyar və yüksək reytinqli filmləri bir yerdə izlə.",
-  },
-  {
-    icon: "bookmark" as const,
-    title: "Şəxsi Watchlist Yarat",
-    desc: "İzləmək istədiyin və bitirdiyin filmləri siyahına əlavə et.",
-  },
-  {
-    icon: "star" as const,
-    title: "Qiymətləndir və Rəy Yaz",
-    desc: "Filmlərə 1-5 ulduz ver, fikirlərini bölüş və statistikanı gör.",
-  },
-];
-
 export default function OnboardingScreen() {
-  const { theme, finishOnboarding } = useApp();
+  const { theme, finishOnboarding, t } = useApp();
   const [step, setStep] = useState(0);
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
+
+  const slides = [
+    { icon: "film" as const, title: t("slide1Title"), desc: t("slide1Desc") },
+    {
+      icon: "bookmark" as const,
+      title: t("slide2Title"),
+      desc: t("slide2Desc"),
+    },
+    { icon: "star" as const, title: t("slide3Title"), desc: t("slide3Desc") },
+  ];
 
   useEffect(() => {
     scaleAnim.setValue(0.5);
@@ -37,19 +29,19 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const handleNext = async () => {
-    if (step < SLIDES.length - 1) {
+    if (step < slides.length - 1) {
       setStep(step + 1);
     } else {
       await finishOnboarding();
     }
   };
 
-  const current = SLIDES[step];
+  const current = slides[step];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <Pressable onPress={finishOnboarding} style={styles.skipBtn}>
-        <Text style={{ color: theme.subtext, fontSize: 15 }}>Keç</Text>
+        <Text style={{ color: theme.subtext, fontSize: 15 }}>{t("skip")}</Text>
       </Pressable>
 
       <View style={styles.center}>
@@ -70,7 +62,7 @@ export default function OnboardingScreen() {
         </Text>
 
         <View style={styles.dots}>
-          {SLIDES.map((_, index) => (
+          {slides.map((_, index) => (
             <View
               key={index}
               style={[
@@ -90,7 +82,7 @@ export default function OnboardingScreen() {
         onPress={handleNext}
       >
         <Text style={styles.buttonText}>
-          {step === SLIDES.length - 1 ? "Başla" : "Növbəti"}
+          {step === slides.length - 1 ? t("start") : t("next")}
         </Text>
       </Pressable>
     </SafeAreaView>

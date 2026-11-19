@@ -13,14 +13,17 @@ import {
 import { useApp } from "../../../context/AppContext";
 
 export default function ProfileScreen() {
-  const { theme, user, stats, reviews, updateAvatar, logout } = useApp();
+  const { theme, user, stats, reviews, updateAvatar, logout, lang, t } =
+    useApp();
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(
-        "İcazə verilmədi",
-        "Profil şəkli seçmək üçün qalereya icazəsi lazımdır.",
+        lang === "az" ? "İcazə verilmədi" : "Permission Denied",
+        lang === "az"
+          ? "Profil şəkli seçmək üçün qalereya icazəsi lazımdır."
+          : "Gallery permission is required to choose a profile photo.",
       );
       return;
     }
@@ -42,7 +45,6 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: theme.bg }]}
       contentContainerStyle={{ padding: 20 }}
     >
-      {/* Profil şəkli və məlumatlar */}
       <View style={styles.header}>
         <Pressable onPress={pickImage} style={styles.avatarWrapper}>
           {user?.avatarUri ? (
@@ -65,16 +67,15 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Text style={[styles.name, { color: theme.text }]}>
-          {user?.name || "İstifadəçi"}
+          {user?.name || "User"}
         </Text>
         <Text style={[styles.email, { color: theme.subtext }]}>
           {user?.email}
         </Text>
       </View>
 
-      {/* Statistika kartları */}
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
-        İzləmə Statistikası
+        {t("watchStats")}
       </Text>
       <View style={styles.statsRow}>
         <View
@@ -88,7 +89,7 @@ export default function ProfileScreen() {
             {stats.totalWatched}
           </Text>
           <Text style={[styles.statLabel, { color: theme.subtext }]}>
-            İzlənilib
+            {t("watchedCount")}
           </Text>
         </View>
 
@@ -106,7 +107,7 @@ export default function ProfileScreen() {
             {stats.favoriteGenre}
           </Text>
           <Text style={[styles.statLabel, { color: theme.subtext }]}>
-            Sevimli janr
+            {t("favoriteGenre")}
           </Text>
         </View>
 
@@ -121,12 +122,11 @@ export default function ProfileScreen() {
             {stats.averageRating}
           </Text>
           <Text style={[styles.statLabel, { color: theme.subtext }]}>
-            Orta reytinq
+            {t("avgRating")}
           </Text>
         </View>
       </View>
 
-      {/* Rəy sayı məlumatı */}
       <View
         style={[
           styles.infoBox,
@@ -134,21 +134,20 @@ export default function ProfileScreen() {
         ]}
       >
         <Text style={{ color: theme.text, fontWeight: "600" }}>
-          Yazılmış ümumi rəy sayı
+          {t("totalReviews")}
         </Text>
         <Text style={{ color: theme.primary, fontWeight: "700", fontSize: 16 }}>
           {reviews.length}
         </Text>
       </View>
 
-      {/* Çıxış düyməsi */}
       <Pressable
         style={[styles.logoutBtn, { borderColor: theme.danger }]}
         onPress={logout}
       >
         <Ionicons name="log-out-outline" size={20} color={theme.danger} />
         <Text style={{ color: theme.danger, fontWeight: "700", fontSize: 15 }}>
-          Hesabdan çıx
+          {t("logout")}
         </Text>
       </Pressable>
     </ScrollView>

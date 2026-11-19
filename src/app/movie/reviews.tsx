@@ -22,9 +22,9 @@ export default function ReviewsScreen() {
   const numericMovieId = Number(Array.isArray(movieId) ? movieId[0] : movieId);
   const titleText = Array.isArray(movieTitle)
     ? movieTitle[0]
-    : movieTitle || "Film";
+    : movieTitle || "Movie";
 
-  const { theme, reviews, addReview, removeReview } = useApp();
+  const { theme, reviews, addReview, removeReview, lang, t } = useApp();
   const router = useRouter();
 
   const [rating, setRating] = useState(5);
@@ -34,7 +34,12 @@ export default function ReviewsScreen() {
 
   const handleAdd = async () => {
     if (!comment.trim()) {
-      Alert.alert("Xəta", "Zəhmət olmasa rəy mətnini yazın.");
+      Alert.alert(
+        lang === "az" ? "Xəta" : "Error",
+        lang === "az"
+          ? "Zəhmət olmasa rəy mətnini yazın."
+          : "Please enter your review text.",
+      );
       return;
     }
     await addReview(numericMovieId, titleText, rating, comment.trim());
@@ -43,10 +48,20 @@ export default function ReviewsScreen() {
   };
 
   const confirmDelete = (id: number) => {
-    Alert.alert("Rəyi sil", "Bu rəyi silmək istədiyinizə əminsiniz?", [
-      { text: "Ləğv et", style: "cancel" },
-      { text: "Sil", style: "destructive", onPress: () => removeReview(id) },
-    ]);
+    Alert.alert(
+      lang === "az" ? "Rəyi sil" : "Delete Review",
+      lang === "az"
+        ? "Bu rəyi silmək istədiyinizə əminsiniz?"
+        : "Are you sure you want to delete this review?",
+      [
+        { text: lang === "az" ? "Ləğv et" : "Cancel", style: "cancel" },
+        {
+          text: t("delete"),
+          style: "destructive",
+          onPress: () => removeReview(id),
+        },
+      ],
+    );
   };
 
   return (
@@ -69,7 +84,7 @@ export default function ReviewsScreen() {
               {titleText}
             </Text>
             <Text style={[styles.label, { color: theme.subtext }]}>
-              Qiymətiniz (1–5 ulduz):
+              {t("yourRating")}
             </Text>
 
             <View style={styles.starsRow}>
@@ -85,7 +100,7 @@ export default function ReviewsScreen() {
             </View>
 
             <TextInput
-              placeholder="Film haqqında fikrinizi yazın..."
+              placeholder={t("reviewPlaceholder")}
               placeholderTextColor={theme.subtext}
               value={comment}
               onChangeText={setComment}
@@ -104,7 +119,7 @@ export default function ReviewsScreen() {
               style={[styles.submitBtn, { backgroundColor: theme.primary }]}
               onPress={handleAdd}
             >
-              <Text style={styles.submitText}>Rəy əlavə et</Text>
+              <Text style={styles.submitText}>{t("addReviewBtn")}</Text>
             </Pressable>
           </View>
         }
@@ -167,7 +182,7 @@ export default function ReviewsScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  Redaktə et
+                  {t("edit")}
                 </Text>
               </Pressable>
 
@@ -183,7 +198,7 @@ export default function ReviewsScreen() {
                     fontWeight: "600",
                   }}
                 >
-                  Sil
+                  {t("delete")}
                 </Text>
               </Pressable>
             </View>
@@ -193,7 +208,7 @@ export default function ReviewsScreen() {
           <Text
             style={{ color: theme.subtext, textAlign: "center", marginTop: 24 }}
           >
-            Bu filmə hələ rəy yazılmayıb.
+            {t("noReviewsYet")}
           </Text>
         }
       />

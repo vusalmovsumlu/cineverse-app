@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchGenres } from '../services/api';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Language, TranslationKey, Translations } from "../i18n";
+import { fetchGenres, setApiLanguage } from "../services/api";
 import {
   deleteReviewDB,
   deleteWatchlistDB,
@@ -15,15 +22,16 @@ import {
   saveToken,
   updateReviewDB,
   updateWatchStatusDB,
-} from '../services/db';
-import { Colors, ThemeType } from '../theme';
-import { Genre, Movie, Review, User, WatchlistItem } from '../types';
+} from "../services/db";
+import { Colors, ThemeType } from "../theme";
+import { Genre, Movie, Review, User, WatchlistItem } from "../types";
 
 interface AppContextType {
   user: User | null;
   isLoading: boolean;
   hasSeenOnboarding: boolean;
   isDark: boolean;
+  lang: Language;
   theme: ThemeType;
   watchlist: WatchlistItem[];
   reviews: Review[];
@@ -31,16 +39,26 @@ interface AppContextType {
   recentViews: Movie[];
   recentSearches: string[];
   stats: { totalWatched: number; favoriteGenre: string; averageRating: string };
+  t: (key: TranslationKey) => string;
   toggleTheme: () => Promise<void>;
+  toggleLanguage: () => Promise<void>;
   finishOnboarding: () => Promise<void>;
   login: (email: string) => Promise<void>;
   register: (name: string, email: string) => Promise<void>;
   logout: () => Promise<void>;
   updateAvatar: (uri: string) => Promise<void>;
-  addToWatchlist: (movie: Movie, status?: 'to_watch' | 'watched') => Promise<void>;
-  changeStatus: (id: number, status: 'to_watch' | 'watched') => Promise<void>;
+  addToWatchlist: (
+    movie: Movie,
+    status?: "to_watch" | "watched",
+  ) => Promise<void>;
+  changeStatus: (id: number, status: "to_watch" | "watched") => Promise<void>;
   removeFromWatchlist: (id: number) => Promise<void>;
-  addReview: (movieId: number, movieTitle: string, rating: number, comment: string) => Promise<void>;
+  addReview: (
+    movieId: number,
+    movieTitle: string,
+    rating: number,
+    comment: string,
+  ) => Promise<void>;
   editReview: (id: number, rating: number, comment: string) => Promise<void>;
   removeReview: (id: number) => Promise<void>;
   saveRecentView: (movie: Movie) => Promise<void>;
@@ -54,6 +72,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [lang, setLang] = useState<Language>("az");
 
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -66,27 +85,41 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         await initDatabase();
 
-        const [token, savedUser, onboarded, savedDark, dbWatchlist, dbReviews, views, searches] =
-          await Promise.all([
-            getToken(),
-            loadData<User | null>('user', null),
-            loadData<boolean>('onboarding', false),
-            loadData<boolean>('isDark', true),
-            getWatchlistDB(),
-            getReviewsDB(),
-            loadData<Movie[]>('recentViews', []),
-            loadData<string[]>('recentSearches', []),
-          ]);
+        const [
+          token,
+          savedUser,
+          onboarded,
+          savedDark,
+          savedLang,
+          dbWatchlist,
+          dbReviews,
+          views,
+          searches,
+        ] = await Promise.all([
+          getToken(),
+          loadData<User | null>("user", null),
+          loadData<boolean>("onboarding", false),
+          loadData<boolean>("isDark", true),
+          loadData<Language>("lang", "az"),
+          getWatchlistDB(),
+          getReviewsDB(),
+          loadData<Movie[]>("recentViews", []),
+          loadData<string[]>("recentSearches", []),
+        ]);
 
         if (token && savedUser) setUser(savedUser);
         setHasSeenOnboarding(onboarded);
         setIsDark(savedDark);
+        setLang(savedLang);
+        setApiLanguage(savedLang);
         setWatchlist(dbWatchlist);
         setReviews(dbReviews);
         setRecentViews(views);
         setRecentSearches(searches);
 
-        fetchGenres().then(setGenres).catch(() => {});
+        fetchGenres()
+          .then(setGenres)
+          .catch(() => {});
       } finally {
         setIsLoading(false);
       }
@@ -95,13 +128,24 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     startApp();
   }, []);
 
-  // Profil statistikası (izlənmiş film sayı, ən çox izlənilən janr, orta reytinq)
+  const t = (key: TranslationKey): string => Translations[lang][key] || key;
+
+  const toggleLanguage = async () => {
+    const next: Language = lang === "az" ? "en" : "az";
+    setLang(next);
+    setApiLanguage(next);
+    await saveData("lang", next);
+    fetchGenres()
+      .then(setGenres)
+      .catch(() => {});
+  };
+
   const stats = useMemo(() => {
-    const watched = watchlist.filter((w) => w.status === 'watched');
+    const watched = watchlist.filter((w) => w.status === "watched");
     const counts: Record<number, number> = {};
 
     watched.forEach((m) => {
-      const ids: number[] = JSON.parse(m.genre_ids || '[]');
+      const ids: number[] = JSON.parse(m.genre_ids || "[]");
       ids.forEach((id) => {
         counts[id] = (counts[id] || 0) + 1;
       });
@@ -116,43 +160,49 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    const favoriteGenre = genres.find((g) => g.id === topId)?.name || 'Yoxdur';
+    const favoriteGenre =
+      genres.find((g) => g.id === topId)?.name || Translations[lang].none;
     const averageRating =
       reviews.length > 0
-        ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-        : '0.0';
+        ? (
+            reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+          ).toFixed(1)
+        : "0.0";
 
     return { totalWatched: watched.length, favoriteGenre, averageRating };
-  }, [watchlist, reviews, genres]);
+  }, [watchlist, reviews, genres, lang]);
 
   const toggleTheme = async () => {
     const next = !isDark;
     setIsDark(next);
-    await saveData('isDark', next);
+    await saveData("isDark", next);
   };
 
   const finishOnboarding = async () => {
     setHasSeenOnboarding(true);
-    await saveData('onboarding', true);
+    await saveData("onboarding", true);
   };
 
   const register = async (name: string, email: string) => {
-    const newUser: User = { name: name.trim(), email: email.trim().toLowerCase() };
-    await saveData('user', newUser);
-    await saveToken('token_' + Date.now());
+    const newUser: User = {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+    };
+    await saveData("user", newUser);
+    await saveToken("token_" + Date.now());
     setUser(newUser);
   };
 
   const login = async (email: string) => {
     const cleanEmail = email.trim().toLowerCase();
-    const saved = await loadData<User | null>('user', null);
+    const saved = await loadData<User | null>("user", null);
     const activeUser: User =
       saved && saved.email === cleanEmail
         ? saved
-        : { name: cleanEmail.split('@')[0], email: cleanEmail };
+        : { name: cleanEmail.split("@")[0], email: cleanEmail };
 
-    await saveData('user', activeUser);
-    await saveToken('token_' + Date.now());
+    await saveData("user", activeUser);
+    await saveToken("token_" + Date.now());
     setUser(activeUser);
   };
 
@@ -165,25 +215,29 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     const updated = { ...user, avatarUri };
     setUser(updated);
-    await saveData('user', updated);
+    await saveData("user", updated);
   };
 
-  // Watchlist & Watched CRUD
-  const addToWatchlist = async (movie: Movie, status: 'to_watch' | 'watched' = 'to_watch') => {
+  const addToWatchlist = async (
+    movie: Movie,
+    status: "to_watch" | "watched" = "to_watch",
+  ) => {
     const item: WatchlistItem = {
       id: movie.id,
       title: movie.title,
       poster_path: movie.poster_path,
       vote_average: movie.vote_average,
       release_date: movie.release_date,
-      genre_ids: JSON.stringify(movie.genre_ids || movie.genres?.map((g) => g.id) || []),
+      genre_ids: JSON.stringify(
+        movie.genre_ids || movie.genres?.map((g) => g.id) || [],
+      ),
       status,
     };
     await insertWatchlistDB(item);
     setWatchlist(await getWatchlistDB());
   };
 
-  const changeStatus = async (id: number, status: 'to_watch' | 'watched') => {
+  const changeStatus = async (id: number, status: "to_watch" | "watched") => {
     await updateWatchStatusDB(id, status);
     setWatchlist(await getWatchlistDB());
   };
@@ -193,12 +247,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setWatchlist(await getWatchlistDB());
   };
 
-  // Reviews CRUD
-  const addReview = async (movieId: number, movieTitle: string, rating: number, comment: string) => {
+  const addReview = async (
+    movieId: number,
+    movieTitle: string,
+    rating: number,
+    comment: string,
+  ) => {
     await insertReviewDB({
       movieId,
       movieTitle,
-      userName: user?.name || 'İstifadəçi',
+      userName: user?.name || "User",
       rating,
       comment,
       createdAt: new Date().toLocaleDateString(),
@@ -216,11 +274,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setReviews(await getReviewsDB());
   };
 
-  // Tarixçə
   const saveRecentView = async (movie: Movie) => {
-    const updated = [movie, ...recentViews.filter((m) => m.id !== movie.id)].slice(0, 10);
+    const updated = [
+      movie,
+      ...recentViews.filter((m) => m.id !== movie.id),
+    ].slice(0, 10);
     setRecentViews(updated);
-    await saveData('recentViews', updated);
+    await saveData("recentViews", updated);
   };
 
   const saveRecentSearch = async (query: string) => {
@@ -228,7 +288,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!q) return;
     const updated = [q, ...recentSearches.filter((s) => s !== q)].slice(0, 6);
     setRecentSearches(updated);
-    await saveData('recentSearches', updated);
+    await saveData("recentSearches", updated);
   };
 
   const theme = isDark ? Colors.dark : Colors.light;
@@ -240,6 +300,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         hasSeenOnboarding,
         isDark,
+        lang,
         theme,
         watchlist,
         reviews,
@@ -247,7 +308,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         recentViews,
         recentSearches,
         stats,
+        t,
         toggleTheme,
+        toggleLanguage,
         finishOnboarding,
         login,
         register,

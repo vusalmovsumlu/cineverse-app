@@ -13,7 +13,7 @@ import { useApp } from "../../../context/AppContext";
 import { getPosterUrl } from "../../../services/api";
 
 export default function WatchlistScreen() {
-  const { theme, watchlist, changeStatus, removeFromWatchlist } = useApp();
+  const { theme, watchlist, changeStatus, removeFromWatchlist, t } = useApp();
   const router = useRouter();
 
   const toWatchList = watchlist.filter((item) => item.status === "to_watch");
@@ -57,7 +57,7 @@ export default function WatchlistScreen() {
                   onPress={() => changeStatus(item.id, "watched")}
                 >
                   <Ionicons name="checkmark" size={16} color="#FFF" />
-                  <Text style={styles.btnText}>İzlədim</Text>
+                  <Text style={styles.btnText}>{t("markWatched")}</Text>
                 </Pressable>
 
                 <Pressable
@@ -78,7 +78,7 @@ export default function WatchlistScreen() {
           <View style={styles.empty}>
             <Ionicons name="bookmark-outline" size={50} color={theme.subtext} />
             <Text style={[styles.emptyText, { color: theme.subtext }]}>
-              Watchlist siyahınız boşdur
+              {t("emptyWatchlist")}
             </Text>
           </View>
         }

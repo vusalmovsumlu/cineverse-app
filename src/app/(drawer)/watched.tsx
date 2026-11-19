@@ -13,7 +13,7 @@ import { useApp } from "../../context/AppContext";
 import { getPosterUrl } from "../../services/api";
 
 export default function WatchedScreen() {
-  const { theme, watchlist, changeStatus, removeFromWatchlist } = useApp();
+  const { theme, watchlist, changeStatus, removeFromWatchlist, t } = useApp();
   const router = useRouter();
 
   const watchedList = watchlist.filter((item) => item.status === "watched");
@@ -47,7 +47,7 @@ export default function WatchedScreen() {
                 {item.title}
               </Text>
               <Text style={[styles.meta, { color: theme.subtext }]}>
-                ★ {item.vote_average?.toFixed(1)} • İzlənilib
+                ★ {item.vote_average?.toFixed(1)} • {t("watchedStatus")}
               </Text>
 
               <View style={styles.actions}>
@@ -62,7 +62,7 @@ export default function WatchedScreen() {
                       fontWeight: "600",
                     }}
                   >
-                    Watchlist-ə qaytar
+                    {t("backToWatchlist")}
                   </Text>
                 </Pressable>
 
@@ -88,7 +88,7 @@ export default function WatchedScreen() {
               color={theme.subtext}
             />
             <Text style={[styles.emptyText, { color: theme.subtext }]}>
-              Hələ izlənilmiş film yoxdur
+              {t("emptyWatched")}
             </Text>
           </View>
         }

@@ -14,18 +14,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useApp } from "../context/AppContext";
 
 export default function LoginScreen() {
-  const { theme, login } = useApp();
+  const { theme, login, lang, t } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
     if (!email.trim() || !email.includes("@")) {
-      setError("Düzgün email ünvanı daxil edin.");
+      setError(
+        lang === "az"
+          ? "Düzgün email ünvanı daxil edin."
+          : "Please enter a valid email.",
+      );
       return;
     }
     if (password.length < 6) {
-      setError("Şifrə ən azı 6 simvol olmalıdır.");
+      setError(
+        lang === "az"
+          ? "Şifrə ən azı 6 simvol olmalıdır."
+          : "Password must be at least 6 characters.",
+      );
       return;
     }
 
@@ -43,7 +51,7 @@ export default function LoginScreen() {
           <Ionicons name="film" size={48} color={theme.primary} />
           <Text style={[styles.logo, { color: theme.text }]}>CineVerse</Text>
           <Text style={[styles.subtitle, { color: theme.subtext }]}>
-            Hesabınıza daxil olun
+            {t("loginSubtitle")}
           </Text>
         </View>
 
@@ -52,7 +60,7 @@ export default function LoginScreen() {
         ) : null}
 
         <TextInput
-          placeholder="Email"
+          placeholder={t("emailPlaceholder")}
           placeholderTextColor={theme.subtext}
           value={email}
           onChangeText={setEmail}
@@ -69,7 +77,7 @@ export default function LoginScreen() {
         />
 
         <TextInput
-          placeholder="Şifrə"
+          placeholder={t("passwordPlaceholder")}
           placeholderTextColor={theme.subtext}
           value={password}
           onChangeText={setPassword}
@@ -88,16 +96,16 @@ export default function LoginScreen() {
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={handleLogin}
         >
-          <Text style={styles.buttonText}>Daxil ol</Text>
+          <Text style={styles.buttonText}>{t("loginBtn")}</Text>
         </Pressable>
 
         <View style={styles.footer}>
-          <Text style={{ color: theme.subtext }}>Hesabınız yoxdur? </Text>
+          <Text style={{ color: theme.subtext }}>{t("noAccount")}</Text>
           <Link
             href="/register"
             style={{ color: theme.primary, fontWeight: "700" }}
           >
-            Qeydiyyat
+            {t("registerTitle")}
           </Link>
         </View>
       </KeyboardAvoidingView>

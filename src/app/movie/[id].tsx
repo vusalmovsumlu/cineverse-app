@@ -29,6 +29,8 @@ export default function MovieDetailsScreen() {
     changeStatus,
     removeFromWatchlist,
     saveRecentView,
+    lang,
+    t,
   } = useApp();
   const router = useRouter();
 
@@ -63,14 +65,19 @@ export default function MovieDetailsScreen() {
 
   useEffect(() => {
     if (movieId) loadDetails();
-  }, [movieId]);
+  }, [movieId, lang]);
 
   const savedItem = watchlist.find((w) => w.id === movieId);
   const movieReviewsCount = reviews.filter((r) => r.movieId === movieId).length;
 
   const openTrailer = async () => {
     if (!trailerKey) {
-      Alert.alert("Məlumat", "Bu film üçün trailer tapılmadı.");
+      Alert.alert(
+        lang === "az" ? "Məlumat" : "Info",
+        lang === "az"
+          ? "Bu film üçün trailer tapılmadı."
+          : "No trailer available for this movie.",
+      );
       return;
     }
     const url = `https://www.youtube.com/watch?v=${trailerKey}`;
@@ -89,13 +96,13 @@ export default function MovieDetailsScreen() {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
         <Text style={{ color: theme.text, marginBottom: 12 }}>
-          Məlumat yüklənmədi
+          {t("loadError")}
         </Text>
         <Pressable
           style={[styles.btn, { backgroundColor: theme.primary }]}
           onPress={loadDetails}
         >
-          <Text style={styles.btnText}>Yenidən yoxla</Text>
+          <Text style={styles.btnText}>{t("retry")}</Text>
         </Pressable>
       </View>
     );
@@ -111,7 +118,6 @@ export default function MovieDetailsScreen() {
       <View style={styles.content}>
         <Text style={[styles.title, { color: theme.text }]}>{movie.title}</Text>
 
-        {/* Reytinq, il və müddət */}
         <View style={styles.metaRow}>
           <Ionicons name="star" size={16} color="#F59E0B" />
           <Text style={[styles.metaText, { color: theme.text }]}>
@@ -121,11 +127,12 @@ export default function MovieDetailsScreen() {
             • {movie.release_date?.slice(0, 4) || "N/A"}
           </Text>
           {movie.runtime ? (
-            <Text style={{ color: theme.subtext }}>• {movie.runtime} dəq</Text>
+            <Text style={{ color: theme.subtext }}>
+              • {movie.runtime} {t("minutes")}
+            </Text>
           ) : null}
         </View>
 
-        {/* Janrlar */}
         {movie.genres && movie.genres.length > 0 && (
           <View style={styles.genreRow}>
             {movie.genres.map((g) => (
@@ -144,7 +151,6 @@ export default function MovieDetailsScreen() {
           </View>
         )}
 
-        {/* Əsas düymələr: Watchlist + Trailer */}
         <View style={styles.actionRow}>
           {!savedItem ? (
             <Pressable
@@ -152,7 +158,7 @@ export default function MovieDetailsScreen() {
               onPress={() => addToWatchlist(movie, "to_watch")}
             >
               <Ionicons name="bookmark-outline" size={18} color="#FFF" />
-              <Text style={styles.btnText}>Watchlist-ə at</Text>
+              <Text style={styles.btnText}>{t("addToWatchlist")}</Text>
             </Pressable>
           ) : (
             <Pressable
@@ -192,8 +198,8 @@ export default function MovieDetailsScreen() {
                 ]}
               >
                 {savedItem.status === "watched"
-                  ? "İzlənilib"
-                  : "Watchlist-dədir"}
+                  ? t("watchedStatus")
+                  : t("inWatchlist")}
               </Text>
             </Pressable>
           )}
@@ -216,17 +222,17 @@ export default function MovieDetailsScreen() {
           </Pressable>
         </View>
 
-        {/* Təsvir */}
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Məzmun</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          {t("overview")}
+        </Text>
         <Text style={[styles.overview, { color: theme.subtext }]}>
-          {movie.overview || "Təsvir mövcud deyil."}
+          {movie.overview || t("noOverview")}
         </Text>
 
-        {/* Aktyorlar */}
         {cast.length > 0 && (
           <View style={{ marginTop: 20 }}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Aktyorlar
+              {t("cast")}
             </Text>
             <FlatList
               horizontal
@@ -258,7 +264,6 @@ export default function MovieDetailsScreen() {
           </View>
         )}
 
-        {/* Rəylər səhifəsinə keçid */}
         <Pressable
           style={[
             styles.reviewNavBtn,
@@ -278,7 +283,7 @@ export default function MovieDetailsScreen() {
               color={theme.primary}
             />
             <Text style={[styles.reviewNavText, { color: theme.text }]}>
-              Rəylər və Qiymətləndirmə ({movieReviewsCount})
+              {t("reviewsAndRating")} ({movieReviewsCount})
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.subtext} />

@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useApp } from "../context/AppContext";
 
 export default function RegisterScreen() {
-  const { theme, register } = useApp();
+  const { theme, register, lang, t } = useApp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,15 +22,27 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (name.trim().length < 2) {
-      setError("Ad ən azı 2 simvol olmalıdır.");
+      setError(
+        lang === "az"
+          ? "Ad ən azı 2 simvol olmalıdır."
+          : "Name must be at least 2 characters.",
+      );
       return;
     }
     if (!email.trim() || !email.includes("@")) {
-      setError("Düzgün email ünvanı daxil edin.");
+      setError(
+        lang === "az"
+          ? "Düzgün email ünvanı daxil edin."
+          : "Please enter a valid email.",
+      );
       return;
     }
     if (password.length < 6) {
-      setError("Şifrə ən azı 6 simvol olmalıdır.");
+      setError(
+        lang === "az"
+          ? "Şifrə ən azı 6 simvol olmalıdır."
+          : "Password must be at least 6 characters.",
+      );
       return;
     }
 
@@ -46,9 +58,11 @@ export default function RegisterScreen() {
       >
         <View style={styles.header}>
           <Ionicons name="person-add" size={44} color={theme.primary} />
-          <Text style={[styles.logo, { color: theme.text }]}>Qeydiyyat</Text>
+          <Text style={[styles.logo, { color: theme.text }]}>
+            {t("registerTitle")}
+          </Text>
           <Text style={[styles.subtitle, { color: theme.subtext }]}>
-            Yeni CineVerse hesabı yaradın
+            {t("registerSubtitle")}
           </Text>
         </View>
 
@@ -57,7 +71,7 @@ export default function RegisterScreen() {
         ) : null}
 
         <TextInput
-          placeholder="Adınız"
+          placeholder={t("namePlaceholder")}
           placeholderTextColor={theme.subtext}
           value={name}
           onChangeText={setName}
@@ -72,7 +86,7 @@ export default function RegisterScreen() {
         />
 
         <TextInput
-          placeholder="Email"
+          placeholder={t("emailPlaceholder")}
           placeholderTextColor={theme.subtext}
           value={email}
           onChangeText={setEmail}
@@ -89,7 +103,7 @@ export default function RegisterScreen() {
         />
 
         <TextInput
-          placeholder="Şifrə (min. 6 simvol)"
+          placeholder={t("passwordPlaceholder")}
           placeholderTextColor={theme.subtext}
           value={password}
           onChangeText={setPassword}
@@ -108,16 +122,16 @@ export default function RegisterScreen() {
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={handleRegister}
         >
-          <Text style={styles.buttonText}>Hesab yarat</Text>
+          <Text style={styles.buttonText}>{t("registerBtn")}</Text>
         </Pressable>
 
         <View style={styles.footer}>
-          <Text style={{ color: theme.subtext }}>Artıq hesabınız var? </Text>
+          <Text style={{ color: theme.subtext }}>{t("haveAccount")}</Text>
           <Link
             href="/login"
             style={{ color: theme.primary, fontWeight: "700" }}
           >
-            Daxil ol
+            {t("loginBtn")}
           </Link>
         </View>
       </KeyboardAvoidingView>

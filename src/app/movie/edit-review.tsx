@@ -26,7 +26,7 @@ export default function EditReviewScreen() {
     ? initialComment[0]
     : initialComment || "";
 
-  const { theme, editReview } = useApp();
+  const { theme, editReview, lang, t } = useApp();
   const router = useRouter();
 
   const [rating, setRating] = useState(startRating);
@@ -34,7 +34,12 @@ export default function EditReviewScreen() {
 
   const handleSave = async () => {
     if (!comment.trim()) {
-      Alert.alert("Xəta", "Rəy mətni boş ola bilməz.");
+      Alert.alert(
+        lang === "az" ? "Xəta" : "Error",
+        lang === "az"
+          ? "Rəy mətni boş ola bilməz."
+          : "Review text cannot be empty.",
+      );
       return;
     }
     await editReview(id, rating, comment.trim());
@@ -44,7 +49,7 @@ export default function EditReviewScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <Text style={[styles.label, { color: theme.subtext }]}>
-        Yeni qiymət (1–5 ulduz):
+        {t("newRating")}
       </Text>
       <View style={styles.starsRow}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -58,7 +63,9 @@ export default function EditReviewScreen() {
         ))}
       </View>
 
-      <Text style={[styles.label, { color: theme.subtext }]}>Rəy mətni:</Text>
+      <Text style={[styles.label, { color: theme.subtext }]}>
+        {t("reviewText")}
+      </Text>
       <TextInput
         value={comment}
         onChangeText={setComment}
@@ -77,7 +84,7 @@ export default function EditReviewScreen() {
         style={[styles.saveBtn, { backgroundColor: theme.primary }]}
         onPress={handleSave}
       >
-        <Text style={styles.saveText}>Yadda saxla</Text>
+        <Text style={styles.saveText}>{t("save")}</Text>
       </Pressable>
     </View>
   );

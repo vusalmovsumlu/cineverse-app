@@ -6,7 +6,7 @@ import { Pressable } from "react-native";
 import { useApp } from "../../../context/AppContext";
 
 export default function TabsLayout() {
-  const { theme } = useApp();
+  const { theme, t } = useApp();
   const navigation = useNavigation();
 
   return (
@@ -33,7 +33,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color as string} />
           ),
@@ -42,7 +42,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "Search",
+          title: t("search"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="search-outline"
@@ -55,7 +55,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="watchlist"
         options={{
-          title: "Watchlist",
+          title: t("watchlist"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="bookmark-outline"
@@ -68,7 +68,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("profile"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="person-outline"

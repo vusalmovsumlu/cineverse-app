@@ -22,7 +22,7 @@ const CARD_WIDTH = (Dimensions.get("window").width - 44) / 2;
 const RATINGS = [0, 6, 7, 8];
 
 export default function SearchScreen() {
-  const { theme, genres, recentSearches, saveRecentSearch } = useApp();
+  const { theme, genres, recentSearches, saveRecentSearch, lang, t } = useApp();
   const router = useRouter();
 
   const [query, setQuery] = useState("");
@@ -62,11 +62,10 @@ export default function SearchScreen() {
     };
 
     runSearch();
-  }, [debouncedQuery, selectedGenre, minRating]);
+  }, [debouncedQuery, selectedGenre, minRating, lang]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      
       <View
         style={[
           styles.searchBox,
@@ -75,7 +74,7 @@ export default function SearchScreen() {
       >
         <Ionicons name="search-outline" size={20} color={theme.subtext} />
         <TextInput
-          placeholder="Film adı axtar..."
+          placeholder={t("searchPlaceholder")}
           placeholderTextColor={theme.subtext}
           value={query}
           onChangeText={setQuery}
@@ -88,7 +87,6 @@ export default function SearchScreen() {
         )}
       </View>
 
-      
       {!query && recentSearches.length > 0 && (
         <View style={styles.chipWrapper}>
           <ScrollView
@@ -115,7 +113,6 @@ export default function SearchScreen() {
         </View>
       )}
 
-      
       <View style={styles.chipWrapper}>
         <ScrollView
           horizontal
@@ -140,7 +137,7 @@ export default function SearchScreen() {
                 fontSize: 13,
               }}
             >
-              Bütün janrlar
+              {t("allGenres")}
             </Text>
           </Pressable>
 
@@ -169,10 +166,9 @@ export default function SearchScreen() {
         </ScrollView>
       </View>
 
-      
       <View style={styles.ratingRow}>
         <Text style={{ color: theme.subtext, fontSize: 13 }}>
-          Min. Reytinq:
+          {t("minRating")}
         </Text>
         {RATINGS.map((r) => {
           const active = minRating === r;
@@ -192,14 +188,13 @@ export default function SearchScreen() {
                   fontWeight: "600",
                 }}
               >
-                {r === 0 ? "Hamısı" : `${r}+ ★`}
+                {r === 0 ? t("all") : `${r}+ ★`}
               </Text>
             </Pressable>
           );
         })}
       </View>
 
-      
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={theme.primary} />
@@ -227,7 +222,7 @@ export default function SearchScreen() {
             <View style={styles.center}>
               <Ionicons name="search-outline" size={44} color={theme.subtext} />
               <Text style={{ color: theme.subtext, marginTop: 10 }}>
-                Uyğun film tapılmadı
+                {t("noMoviesFound")}
               </Text>
             </View>
           }

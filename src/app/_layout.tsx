@@ -11,7 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AppProvider, useApp } from "../context/AppContext";
 
 function RootNavigator() {
-  const { user, isLoading, hasSeenOnboarding, isDark, theme } = useApp();
+  const { user, isLoading, hasSeenOnboarding, isDark, theme, t } = useApp();
   const segments = useSegments();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
@@ -57,11 +57,14 @@ function RootNavigator() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-        <Stack.Screen name="movie/[id]" options={{ title: "Film Detalları" }} />
-        <Stack.Screen name="movie/reviews" options={{ title: "Rəylər" }} />
+        <Stack.Screen
+          name="movie/[id]"
+          options={{ title: t("movieDetails") }}
+        />
+        <Stack.Screen name="movie/reviews" options={{ title: t("reviews") }} />
         <Stack.Screen
           name="movie/edit-review"
-          options={{ title: "Rəyi Redaktə Et" }}
+          options={{ title: t("editReview") }}
         />
       </Stack>
 

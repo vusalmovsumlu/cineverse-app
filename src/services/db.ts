@@ -6,7 +6,6 @@ import { Movie, Review, User, WatchlistItem } from "../types";
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-
 export const initDatabase = async () => {
   if (!db) {
     db = await SQLite.openDatabaseAsync("cineverse.db");
@@ -34,7 +33,6 @@ export const initDatabase = async () => {
     `);
   }
 };
-
 
 export const getWatchlistDB = async (): Promise<WatchlistItem[]> => {
   if (!db) await initDatabase();
@@ -72,7 +70,6 @@ export const deleteWatchlistDB = async (id: number) => {
   if (!db) await initDatabase();
   await db?.runAsync("DELETE FROM watchlist WHERE id = ?", [id]);
 };
-
 
 export const getReviewsDB = async (): Promise<Review[]> => {
   if (!db) await initDatabase();
@@ -112,7 +109,6 @@ export const deleteReviewDB = async (id: number) => {
   if (!db) await initDatabase();
   await db?.runAsync("DELETE FROM reviews WHERE id = ?", [id]);
 };
-
 
 export const saveToken = async (token: string) => {
   if (Platform.OS === "web") return AsyncStorage.setItem("token", token);

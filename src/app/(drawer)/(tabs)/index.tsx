@@ -24,7 +24,7 @@ import { Movie } from "../../../types";
 const CARD_WIDTH = (Dimensions.get("window").width - 44) / 2;
 
 export default function HomeScreen() {
-  const { theme, recentViews } = useApp();
+  const { theme, recentViews, lang, t } = useApp();
   const router = useRouter();
 
   const [trending, setTrending] = useState<Movie[]>([]);
@@ -42,38 +42,40 @@ export default function HomeScreen() {
     router.push({ pathname: "/movie/[id]", params: { id } });
   };
 
-  const loadMovies = useCallback(async (isRefresh = false) => {
-    try {
-      if (!isRefresh) setLoading(true);
-      setError(false);
-      setIsOffline(false);
+  const loadMovies = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (!isRefresh) setLoading(true);
+        setError(false);
+        setIsOffline(false);
 
-      const [trendData, topData, popData] = await Promise.all([
-        fetchTrending(),
-        fetchTopRated(1),
-        fetchPopular(1),
-      ]);
+        const [trendData, topData, popData] = await Promise.all([
+          fetchTrending(),
+          fetchTopRated(1),
+          fetchPopular(1),
+        ]);
 
-      setTrending(trendData);
-      setTopRated(topData);
-      setPopular(popData);
-      setPage(1);
+        setTrending(trendData);
+        setTopRated(topData);
+        setPopular(popData);
+        setPage(1);
 
-      // Offline rejim üçün son filmləri yaddaşda saxlayırıq
-      await saveData("cachedMovies", popData);
-    } catch {
-      const cached = await loadData<Movie[]>("cachedMovies", []);
-      if (cached.length > 0) {
-        setPopular(cached);
-        setIsOffline(true);
-      } else {
-        setError(true);
+        await saveData(`cachedMovies_${lang}`, popData);
+      } catch {
+        const cached = await loadData<Movie[]>(`cachedMovies_${lang}`, []);
+        if (cached.length > 0) {
+          setPopular(cached);
+          setIsOffline(true);
+        } else {
+          setError(true);
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+    },
+    [lang],
+  );
 
   useEffect(() => {
     loadMovies();
@@ -112,13 +114,13 @@ export default function HomeScreen() {
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
         <Ionicons name="cloud-offline-outline" size={48} color={theme.danger} />
         <Text style={[styles.errorText, { color: theme.text }]}>
-          Filmləri yükləmək mümkün olmadı
+          {t("loadError")}
         </Text>
         <Pressable
           style={[styles.retryBtn, { backgroundColor: theme.primary }]}
           onPress={() => loadMovies()}
         >
-          <Text style={styles.retryText}>Yenidən yoxla</Text>
+          <Text style={styles.retryText}>{t("retry")}</Text>
         </Pressable>
       </View>
     );
@@ -130,7 +132,7 @@ export default function HomeScreen() {
         <View style={[styles.offlineBanner, { backgroundColor: theme.card }]}>
           <Ionicons name="wifi-outline" size={16} color={theme.primary} />
           <Text style={{ color: theme.subtext, fontSize: 13 }}>
-            İnternet yoxdur. Keşlənmiş filmlər göstərilir.
+            {t("offlineBanner")}
           </Text>
         </View>
       )}
@@ -138,7 +140,7 @@ export default function HomeScreen() {
       {trending.length > 0 && (
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Trending
+            {t("trending")}
           </Text>
           <FlatList
             horizontal
@@ -160,7 +162,7 @@ export default function HomeScreen() {
       {topRated.length > 0 && (
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Top Rated
+            {t("topRated")}
           </Text>
           <FlatList
             horizontal
@@ -182,7 +184,7 @@ export default function HomeScreen() {
       {recentViews.length > 0 && (
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Son baxılanlar
+            {t("recentViews")}
           </Text>
           <FlatList
             horizontal
@@ -204,7 +206,7 @@ export default function HomeScreen() {
       <Text
         style={[styles.sectionTitle, { color: theme.text, marginBottom: 12 }]}
       >
-        Popular Movies
+        {t("popularMovies")}
       </Text>
     </View>
   );

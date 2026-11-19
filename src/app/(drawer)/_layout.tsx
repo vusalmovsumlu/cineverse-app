@@ -4,7 +4,7 @@ import React from "react";
 import { useApp } from "../../context/AppContext";
 
 export default function DrawerLayout() {
-  const { theme } = useApp();
+  const { theme, t } = useApp();
 
   return (
     <Drawer
@@ -29,7 +29,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="watched"
         options={{
-          title: "Watched Movies",
+          title: t("watchedMovies"),
           drawerIcon: ({ color, size }) => (
             <Ionicons
               name="checkmark-circle-outline"
@@ -42,7 +42,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: t("settings"),
           drawerIcon: ({ color, size }) => (
             <Ionicons
               name="settings-outline"
