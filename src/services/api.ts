@@ -10,6 +10,36 @@ export const setApiLanguage = (lang: Language) => {
   currentApiLang = lang === 'az' ? 'az-AZ' : 'en-US';
 };
 
+const AZ_GENRES: Record<number, string> = {
+  28: 'Döyüş',
+  12: 'Macəra',
+  16: 'Animasiya',
+  35: 'Komediya',
+  80: 'Cinayət',
+  99: 'Sənədli',
+  18: 'Dram',
+  10751: 'Ailəvi',
+  14: 'Fantastika',
+  36: 'Tarixi',
+  27: 'Qorxu',
+  10402: 'Musiqili',
+  9648: 'Detektiv',
+  10749: 'Romantik',
+  878: 'Elmi-fantastika',
+  10770: 'TV Film',
+  53: 'Triller',
+  10752: 'Müharibə',
+  37: 'Vestern',
+};
+
+const localizeGenres = (genres: Genre[]): Genre[] => {
+  if (currentApiLang !== 'az-AZ') return genres;
+  return genres.map((g) => ({
+    id: g.id,
+    name: AZ_GENRES[g.id] || g.name || 'Digər',
+  }));
+};
+
 const api = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
 });
@@ -43,8 +73,8 @@ export const fetchTopRated = async (page = 1): Promise<Movie[]> => {
 };
 
 export const fetchGenres = async (): Promise<Genre[]> => {
-  const res = await api.get('/genre/movie/list');
-  return res.data.genres;
+  const res = await api.get('/genre/movie/list', { params: { language: 'en-US' } });
+  return localizeGenres(res.data.genres);
 };
 
 export const searchMovies = async (query: string): Promise<Movie[]> => {
@@ -65,24 +95,34 @@ export const fetchMovieDetails = async (id: string | number) => {
   const [detailsRes, creditsRes, videosRes] = await Promise.all([
     api.get(`/movie/${id}`),
     api.get(`/movie/${id}/credits`),
-    api.get(`/movie/${id}/videos`),
+    api.get(`/movie/${id}/videos`, { params: { language: 'en-US' } }),
   ]);
 
   const movie = detailsRes.data as Movie;
 
-  // Əgər TMDB-də filmin AZ təsviri yoxdursa, avtomatik EN təsvirini götürürük
   if (!movie.overview && currentApiLang === 'az-AZ') {
     const enRes = await api.get(`/movie/${id}`, { params: { language: 'en-US' } });
     movie.overview = enRes.data.overview;
   }
 
-  const trailer = videosRes.data.results.find(
-    (v: any) => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser')
-  );
+  if (movie.genres) {
+    movie.genres = localizeGenres(movie.genres);
+  }
+
+  const youtubeVideos = videosRes.data.results.filter((v: any) => v.site === 'YouTube');
+  const trailer =
+    youtubeVideos.find((v: any) => v.type === 'Trailer') ||
+    youtubeVideos.find((v: any) => v.type === 'Teaser') ||
+    youtubeVideos[0];
 
   return {
     movie,
-    cast: creditsRes.data.cast.slice(0, 10) as { id: number; name: string; character: string; profile_path: string | null }[],
+    cast: creditsRes.data.cast.slice(0, 10) as {
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+    }[],
     trailerKey: trailer ? (trailer.key as string) : null,
   };
 };

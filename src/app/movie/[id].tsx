@@ -71,16 +71,11 @@ export default function MovieDetailsScreen() {
   const movieReviewsCount = reviews.filter((r) => r.movieId === movieId).length;
 
   const openTrailer = async () => {
-    if (!trailerKey) {
-      Alert.alert(
-        lang === "az" ? "Məlumat" : "Info",
-        lang === "az"
-          ? "Bu film üçün trailer tapılmadı."
-          : "No trailer available for this movie.",
-      );
-      return;
-    }
-    const url = `https://www.youtube.com/watch?v=${trailerKey}`;
+    const url = trailerKey
+      ? `https://www.youtube.com/watch?v=${trailerKey}`
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent(
+          `${movie?.title || ''} official trailer`
+        )}`;
     await Linking.openURL(url);
   };
 

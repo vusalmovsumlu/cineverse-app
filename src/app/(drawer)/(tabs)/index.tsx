@@ -95,7 +95,7 @@ export default function HomeScreen() {
       setPopular((prev) => [...prev, ...more]);
       setPage(nextPage);
     } catch {
-      // Səhifələmə xətası olduqda səssiz keçir
+      
     } finally {
       setLoadingMore(false);
     }

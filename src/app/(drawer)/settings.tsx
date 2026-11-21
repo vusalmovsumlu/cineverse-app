@@ -32,7 +32,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      {/* Dil seçimi (AZ / EN) */}
+      
       <View
         style={[
           styles.row,
@@ -60,7 +60,7 @@ export default function SettingsScreen() {
         </Pressable>
       </View>
 
-      {/* Dark Mode */}
+      
       <View
         style={[
           styles.row,
@@ -90,7 +90,7 @@ export default function SettingsScreen() {
         />
       </View>
 
-      {/* Bildirişlər */}
+      
       <View
         style={[
           styles.row,

@@ -29,7 +29,6 @@ import { Genre, Movie, Review, User, WatchlistItem } from "../types";
 interface AppContextType {
   user: User | null;
   isLoading: boolean;
-  hasSeenOnboarding: boolean;
   isDark: boolean;
   lang: Language;
   theme: ThemeType;
@@ -42,7 +41,6 @@ interface AppContextType {
   t: (key: TranslationKey) => string;
   toggleTheme: () => Promise<void>;
   toggleLanguage: () => Promise<void>;
-  finishOnboarding: () => Promise<void>;
   login: (email: string) => Promise<void>;
   register: (name: string, email: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -70,7 +68,6 @@ const AppContext = createContext<AppContextType>({} as AppContextType);
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState<Language>("az");
 
@@ -88,7 +85,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const [
           token,
           savedUser,
-          onboarded,
           savedDark,
           savedLang,
           dbWatchlist,
@@ -98,7 +94,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         ] = await Promise.all([
           getToken(),
           loadData<User | null>("user", null),
-          loadData<boolean>("onboarding", false),
           loadData<boolean>("isDark", true),
           loadData<Language>("lang", "az"),
           getWatchlistDB(),
@@ -108,7 +103,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         ]);
 
         if (token && savedUser) setUser(savedUser);
-        setHasSeenOnboarding(onboarded);
         setIsDark(savedDark);
         setLang(savedLang);
         setApiLanguage(savedLang);
@@ -176,11 +170,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const next = !isDark;
     setIsDark(next);
     await saveData("isDark", next);
-  };
-
-  const finishOnboarding = async () => {
-    setHasSeenOnboarding(true);
-    await saveData("onboarding", true);
   };
 
   const register = async (name: string, email: string) => {
@@ -298,7 +287,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         user,
         isLoading,
-        hasSeenOnboarding,
         isDark,
         lang,
         theme,
@@ -311,7 +299,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         t,
         toggleTheme,
         toggleLanguage,
-        finishOnboarding,
         login,
         register,
         logout,

@@ -11,7 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AppProvider, useApp } from "../context/AppContext";
 
 function RootNavigator() {
-  const { user, isLoading, hasSeenOnboarding, isDark, theme, t } = useApp();
+  const { user, isLoading, isDark, theme, t } = useApp();
   const segments = useSegments();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
@@ -21,26 +21,15 @@ function RootNavigator() {
 
     const current = segments[0];
 
-    if (!hasSeenOnboarding && current !== "onboarding") {
-      router.replace("/onboarding");
-    } else if (
-      hasSeenOnboarding &&
-      !user &&
-      current !== "login" &&
-      current !== "register"
-    ) {
+    if (!user && current !== "login" && current !== "register") {
       router.replace("/login");
     } else if (
-      hasSeenOnboarding &&
       user &&
-      (!current ||
-        current === "login" ||
-        current === "register" ||
-        current === "onboarding")
+      (!current || current === "login" || current === "register")
     ) {
       router.replace("/(drawer)/(tabs)");
     }
-  }, [user, isLoading, hasSeenOnboarding, segments, rootNavigationState?.key]);
+  }, [user, isLoading, segments, rootNavigationState?.key]);
 
   return (
     <>
@@ -53,7 +42,6 @@ function RootNavigator() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
